@@ -43,7 +43,6 @@
       align-items:center;
     }
 
-    /* Inputs/buttons */
     .input, .btn, .selectbtn{
       appearance:none;
       -webkit-appearance:none;
@@ -69,7 +68,7 @@
 
     .muted{opacity:0.8; font-size:12px;}
 
-    /* Multi-select dropdown (white background + readable text) */
+    /* Multi-select dropdown */
     .select{position:relative; width:100%;}
     .selectbtn{
       width:100%;
@@ -149,6 +148,8 @@
       border-spacing:0;
       min-width:1100px;
     }
+
+    /* ✅ Header text wrapping per-word (no breaking words) */
     thead th{
       position:sticky;
       top:0;
@@ -160,8 +161,15 @@
       font-size:12px;
       letter-spacing:0.02em;
       padding:10px 12px;
-      white-space:nowrap;
+
+      white-space: normal;     /* allow wrapping */
+      word-break: normal;      /* don't break words */
+      overflow-wrap: normal;   /* don't break long words */
+      hyphens: none;
+      line-height: 1.2;
+      vertical-align: bottom;
     }
+
     tbody td{
       border-bottom:1px solid rgba(0,0,0,0.06);
       padding:10px 12px;
@@ -363,7 +371,7 @@
     let eMinDefault = null, eMaxDefault = null;
     let fMinDefault = null, fMaxDefault = null;
 
-    // KEY FIX: range filters are NOT active until the user edits them
+    // Range filters are NOT active until the user edits them
     let eTouched = false;
     let fTouched = false;
 
@@ -455,18 +463,29 @@
       return out;
     }
 
-    function toNumber(s) {
-      if (s === null || s === undefined) return NaN;
-      const v = String(s).trim();
-      if (v === "") return NaN;
-      const n = Number(v);
+    // ✅ FIX for Sum showing 0:
+    // Column values may contain symbols like %, £, commas, etc.
+    // This extracts the first numeric token safely (keeps sign and decimals).
+    function toNumberLoose(value) {
+      if (value === null || value === undefined) return NaN;
+      const s = String(value).trim();
+      if (!s) return NaN;
+
+      // remove thousands separators
+      const cleaned = s.replace(/,/g, "");
+
+      // extract first number (supports leading sign and decimals)
+      const m = cleaned.match(/[-+]?\d*\.?\d+/);
+      if (!m) return NaN;
+
+      const n = Number(m[0]);
       return Number.isFinite(n) ? n : NaN;
     }
 
     function computeMinMaxNumeric(colIdx) {
       let min = Infinity, max = -Infinity, count = 0;
       for (const r of rows) {
-        const n = toNumber(r[colIdx]);
+        const n = toNumberLoose(r[colIdx]);
         if (Number.isFinite(n)) {
           count++;
           if (n < min) min = n;
@@ -607,7 +626,7 @@
     function updateSummary() {
       let sum = 0;
       for (const r of filtered) {
-        const n = toNumber(r[COLS.M_SUM]);
+        const n = toNumberLoose(r[COLS.M_SUM]);
         if (Number.isFinite(n)) sum += n;
       }
       racesPillEl.textContent = `Races: ${filtered.length.toLocaleString()}`;
@@ -645,16 +664,14 @@
         if (!tracksAll && !selectedTracks.has(track)) return false;
         if (!gradesAll && !selectedGrades.has(grade)) return false;
 
-        // KEY FIX: only filter E/F after the user has touched those inputs
         if (eTouched && eRange.apply) {
-          const e = toNumber(r[COLS.E_MODEL_PCT]);
+          const e = toNumberLoose(r[COLS.E_MODEL_PCT]);
           if (!Number.isFinite(e)) return false;
           if (e < eRange.minVal || e > eRange.maxVal) return false;
         }
 
         if (fTouched && fRange.apply) {
-          const f = toNumber(r[COLS.F_MODEL_DIFF]);
-          // If F is non-numeric, keep row unless you want strict filtering
+          const f = toNumberLoose(r[COLS.F_MODEL_DIFF]); // supports % strings too
           if (Number.isFinite(f)) {
             if (f < fRange.minVal || f > fRange.maxVal) return false;
           }
@@ -683,11 +700,9 @@
       selectedTracks.clear();
       selectedGrades.clear();
 
-      // Reset touched flags so page shows ALL rows again
       eTouched = false;
       fTouched = false;
 
-      // Repopulate inputs with min/max, but they won't filter until edited
       if (eMinDefault !== null && eMaxDefault !== null) {
         eMinEl.value = eMinDefault.toFixed(2);
         eMaxEl.value = eMaxDefault.toFixed(2);
@@ -736,11 +751,10 @@
         eMinDefault = em.min;
         eMaxDefault = em.max;
 
-        const fm = computeMinMaxNumeric(COLS.F_MODEL_DIFF);
+        const fm = computeMinMaxNumeric(COLS.F_MODEL_DIFF); // now works even if values have %
         fMinDefault = fm.min;
         fMaxDefault = fm.max;
 
-        // Populate inputs but DO NOT enable filtering until user edits
         eTouched = false;
         fTouched = false;
 
@@ -808,7 +822,6 @@
 
     [dateFromEl, dateToEl].forEach(el => el.addEventListener("change", () => applyFiltersAndRender(true)));
 
-    // Mark range filters as "touched" only when user edits them
     [eMinEl, eMaxEl].forEach(el => {
       el.addEventListener("input", () => { eTouched = true; applyFiltersAndRender(true); });
       el.addEventListener("change", () => { eTouched = true; applyFiltersAndRender(true); });
