@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* Page-specific additions that match your site */
     .filters{
       display:grid;
       grid-template-columns:repeat(12,1fr);
@@ -44,7 +43,7 @@
       align-items:center;
     }
 
-    /* Inputs/buttons: keep compatible with your theme */
+    /* Inputs/buttons */
     .input, .btn, .selectbtn{
       appearance:none;
       -webkit-appearance:none;
@@ -70,7 +69,7 @@
 
     .muted{opacity:0.8; font-size:12px;}
 
-    /* Multi-select dropdown (FIX #2: white background + readable text) */
+    /* Multi-select dropdown (white background + readable text) */
     .select{position:relative; width:100%;}
     .selectbtn{
       width:100%;
@@ -142,13 +141,13 @@
     .table-scroll{
       overflow:auto;
       max-height:70vh;
-      min-height:260px; /* FIX #1: ensure there's visible body area even when few rows */
+      min-height:260px;
     }
     table{
       width:100%;
       border-collapse:separate;
       border-spacing:0;
-      min-width:1100px; /* A–M needs room */
+      min-width:1100px;
     }
     thead th{
       position:sticky;
@@ -240,9 +239,7 @@
         <h2 style="margin-top:0;">Selections</h2>
         <p class="muted">Filter by Date, Track, Grade, Model % and Model Difference. Sorted newest first.</p>
 
-        <!-- Filters -->
         <div class="filters" aria-label="Filters">
-          <!-- Date range -->
           <div class="field field-date">
             <span class="label">Date (From / To)</span>
             <div class="row">
@@ -252,7 +249,6 @@
             </div>
           </div>
 
-          <!-- Track multi-select -->
           <div class="field field-track">
             <span class="label">Track (multi-select)</span>
             <div class="select" id="trackSelect">
@@ -264,7 +260,6 @@
             </div>
           </div>
 
-          <!-- Grade multi-select -->
           <div class="field field-grade">
             <span class="label">Grade (multi-select)</span>
             <div class="select" id="gradeSelect">
@@ -276,7 +271,6 @@
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="field field-actions">
             <span class="label">Actions</span>
             <div class="row">
@@ -284,26 +278,25 @@
             </div>
           </div>
 
-          <!-- Model % range -->
           <div class="field field-range">
             <span class="label">Model Percentage (E) min / max</span>
             <div class="row">
               <input id="eMin" class="input" type="number" step="0.01" aria-label="Model Percentage min" />
               <input id="eMax" class="input" type="number" step="0.01" aria-label="Model Percentage max" />
             </div>
+            <div class="muted" style="margin-top:8px;">Tip: editing these enables filtering</div>
           </div>
 
-          <!-- Model Difference range -->
           <div class="field field-range">
             <span class="label">Model Difference (F) min / max</span>
             <div class="row">
               <input id="fMin" class="input" type="number" step="0.01" aria-label="Model Difference min" />
               <input id="fMax" class="input" type="number" step="0.01" aria-label="Model Difference max" />
             </div>
+            <div class="muted" style="margin-top:8px;">Tip: editing these enables filtering</div>
           </div>
         </div>
 
-        <!-- Table -->
         <div class="tablewrap" aria-label="Selections table">
           <div class="table-topbar">
             <div class="summary">
@@ -320,9 +313,7 @@
 
           <div class="table-scroll">
             <table>
-              <thead>
-                <tr id="theadRow"></tr>
-              </thead>
+              <thead><tr id="theadRow"></tr></thead>
               <tbody id="tbody"></tbody>
             </table>
           </div>
@@ -346,13 +337,9 @@
   </footer>
 
   <script>
-    // =========================
-    // Config
-    // =========================
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSEHhRjNWX2Eo5dN4euW74cv5WZE8Et-4dfgr2uzScW61xwZmlRntOOfO757QMkSzefUUII4SGtJZZT/pub?gid=643345181&single=true&output=csv";
     const PAGE_SIZE = 200;
 
-    // Columns A–M => indices 0..12
     const COLS = {
       A_DATE: 0,
       B_TRACK: 1,
@@ -362,28 +349,24 @@
       M_SUM: 12,
     };
 
-    // =========================
-    // State
-    // =========================
     let headers = [];
-    let rows = [];          // full dataset (A–M only)
-    let filtered = [];      // after applying filters
+    let rows = [];
+    let filtered = [];
     let page = 1;
 
     const selectedTracks = new Set();
     const selectedGrades = new Set();
 
-    // Defaults discovered from data
     let dateMin = null;
     let dateMax = null;
 
-    // If we can't compute min/max (no numeric values), these stay null and range filter is disabled
     let eMinDefault = null, eMaxDefault = null;
     let fMinDefault = null, fMaxDefault = null;
 
-    // =========================
-    // DOM
-    // =========================
+    // KEY FIX: range filters are NOT active until the user edits them
+    let eTouched = false;
+    let fTouched = false;
+
     const statusEl = document.getElementById("status");
 
     const dateFromEl = document.getElementById("dateFrom");
@@ -407,7 +390,6 @@
 
     const resetBtn = document.getElementById("resetBtn");
 
-    // Multi-select DOM
     const trackBtn = document.getElementById("trackBtn");
     const trackBtnLabel = document.getElementById("trackBtnLabel");
     const trackPanel = document.getElementById("trackPanel");
@@ -416,23 +398,14 @@
     const gradeBtnLabel = document.getElementById("gradeBtnLabel");
     const gradePanel = document.getElementById("gradePanel");
 
-    // =========================
-    // Helpers
-    // =========================
     function setStatus(msg, isError = false) {
       statusEl.textContent = msg || "";
       statusEl.classList.toggle("error", !!isError);
     }
 
     function pad2(n) { return String(n).padStart(2, "0"); }
-    function toISODate(d) {
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
+    function toISODate(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 
-    // Date parsing:
-    // - ISO: 2025-12-19
-    // - UK: 19/12/2025
-    // - Fallback: Date.parse
     function parseDateLoose(s) {
       if (!s) return null;
       const v = String(s).trim();
@@ -454,7 +427,6 @@
       return new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
     }
 
-    // Robust CSV parser (quotes/commas/newlines)
     function parseCSV(text) {
       const out = [];
       let row = [];
@@ -466,30 +438,15 @@
         const next = text[i + 1];
 
         if (inQuotes) {
-          if (ch === '"' && next === '"') {
-            cur += '"';
-            i++;
-          } else if (ch === '"') {
-            inQuotes = false;
-          } else {
-            cur += ch;
-          }
+          if (ch === '"' && next === '"') { cur += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else { cur += ch; }
         } else {
-          if (ch === '"') {
-            inQuotes = true;
-          } else if (ch === ",") {
-            row.push(cur);
-            cur = "";
-          } else if (ch === "\n") {
-            row.push(cur);
-            out.push(row);
-            row = [];
-            cur = "";
-          } else if (ch === "\r") {
-            // ignore
-          } else {
-            cur += ch;
-          }
+          if (ch === '"') inQuotes = true;
+          else if (ch === ",") { row.push(cur); cur = ""; }
+          else if (ch === "\n") { row.push(cur); out.push(row); row = []; cur = ""; }
+          else if (ch === "\r") {}
+          else { cur += ch; }
         }
       }
       row.push(cur);
@@ -507,10 +464,7 @@
     }
 
     function computeMinMaxNumeric(colIdx) {
-      let min = Infinity;
-      let max = -Infinity;
-      let count = 0;
-
+      let min = Infinity, max = -Infinity, count = 0;
       for (const r of rows) {
         const n = toNumber(r[colIdx]);
         if (Number.isFinite(n)) {
@@ -519,7 +473,6 @@
           if (n > max) max = n;
         }
       }
-
       if (count === 0) return { min: null, max: null, count: 0 };
       return { min, max, count };
     }
@@ -541,7 +494,7 @@
         const v = String(r[colIdx] ?? "").trim();
         if (v) set.add(v);
       }
-      return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+      return Array.from(set).sort((a,b) => a.localeCompare(b, undefined, { sensitivity:"base" }));
     }
 
     function setPanelOpen(panel, btn, open) {
@@ -551,20 +504,14 @@
 
     function closePanelsIfClickedOutside(e) {
       const t = e.target;
-      const trackWrap = document.getElementById("trackSelect");
-      const gradeWrap = document.getElementById("gradeSelect");
-      if (!trackWrap.contains(t)) setPanelOpen(trackPanel, trackBtn, false);
-      if (!gradeWrap.contains(t)) setPanelOpen(gradePanel, gradeBtn, false);
+      if (!document.getElementById("trackSelect").contains(t)) setPanelOpen(trackPanel, trackBtn, false);
+      if (!document.getElementById("gradeSelect").contains(t)) setPanelOpen(gradePanel, gradeBtn, false);
     }
 
     function updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel) {
-      if (selectedSet.size === 0 || selectedSet.size === values.length) {
-        btnLabelEl.textContent = allLabel;
-      } else if (selectedSet.size === 1) {
-        btnLabelEl.textContent = Array.from(selectedSet)[0];
-      } else {
-        btnLabelEl.textContent = `${selectedSet.size} selected`;
-      }
+      if (selectedSet.size === 0 || selectedSet.size === values.length) btnLabelEl.textContent = allLabel;
+      else if (selectedSet.size === 1) btnLabelEl.textContent = Array.from(selectedSet)[0];
+      else btnLabelEl.textContent = `${selectedSet.size} selected`;
     }
 
     function renderMultiSelect(panel, values, selectedSet, btnLabelEl, allLabel) {
@@ -607,8 +554,7 @@
         cb.type = "checkbox";
         cb.checked = selectedSet.has(v);
         cb.addEventListener("change", () => {
-          if (cb.checked) selectedSet.add(v);
-          else selectedSet.delete(v);
+          if (cb.checked) selectedSet.add(v); else selectedSet.delete(v);
           updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
           applyFiltersAndRender(true);
         });
@@ -660,26 +606,19 @@
 
     function updateSummary() {
       let sum = 0;
-      const count = filtered.length;
-
       for (const r of filtered) {
         const n = toNumber(r[COLS.M_SUM]);
         if (Number.isFinite(n)) sum += n;
       }
-
-      racesPillEl.textContent = `Races: ${count.toLocaleString()}`;
+      racesPillEl.textContent = `Races: ${filtered.length.toLocaleString()}`;
       sumMPillEl.textContent = `Sum (Col M): ${sum.toFixed(2)}`;
     }
 
-    function getRangeNumbers(minEl, maxEl, minDefault, maxDefault) {
-      // Only apply range filter if BOTH inputs contain numbers.
-      // (This prevents accidental "0.00 → 0.00" filtering everything out.)
+    function getRange(minEl, maxEl) {
       const minStr = String(minEl.value ?? "").trim();
       const maxStr = String(maxEl.value ?? "").trim();
-
-      const minVal = minStr === "" ? (minDefault ?? NaN) : Number(minStr);
-      const maxVal = maxStr === "" ? (maxDefault ?? NaN) : Number(maxStr);
-
+      const minVal = minStr === "" ? NaN : Number(minStr);
+      const maxVal = maxStr === "" ? NaN : Number(maxStr);
       const apply = Number.isFinite(minVal) && Number.isFinite(maxVal);
       return { apply, minVal, maxVal };
     }
@@ -690,52 +629,41 @@
       const fromVal = dateFromEl.value ? parseDateLoose(dateFromEl.value) : null;
       const toVal   = dateToEl.value ? parseDateLoose(dateToEl.value) : null;
 
-      const eRange = getRangeNumbers(eMinEl, eMaxEl, eMinDefault, eMaxDefault);
-      const fRange = getRangeNumbers(fMinEl, fMaxEl, fMinDefault, fMaxDefault);
+      const eRange = getRange(eMinEl, eMaxEl);
+      const fRange = getRange(fMinEl, fMaxEl);
 
       const tracksAll = (selectedTracks.size === 0);
       const gradesAll = (selectedGrades.size === 0);
 
       filtered = rows.filter(r => {
-        // Date filter
         const dt = parseDateLoose(r[COLS.A_DATE]);
         if (fromVal && dt && dt < fromVal) return false;
         if (toVal && dt && dt > toVal) return false;
 
-        // Track / Grade
         const track = String(r[COLS.B_TRACK] ?? "").trim();
         const grade = String(r[COLS.C_GRADE] ?? "").trim();
         if (!tracksAll && !selectedTracks.has(track)) return false;
         if (!gradesAll && !selectedGrades.has(grade)) return false;
 
-        // E range inclusive (only if range is active)
-        if (eRange.apply) {
+        // KEY FIX: only filter E/F after the user has touched those inputs
+        if (eTouched && eRange.apply) {
           const e = toNumber(r[COLS.E_MODEL_PCT]);
-          if (Number.isFinite(e)) {
-            if (e < eRange.minVal || e > eRange.maxVal) return false;
-          } else {
-            // exclude if E is non-numeric and user is filtering E
-            return false;
-          }
+          if (!Number.isFinite(e)) return false;
+          if (e < eRange.minVal || e > eRange.maxVal) return false;
         }
 
-        // F range inclusive (only if range is active)
-        if (fRange.apply) {
+        if (fTouched && fRange.apply) {
           const f = toNumber(r[COLS.F_MODEL_DIFF]);
+          // If F is non-numeric, keep row unless you want strict filtering
           if (Number.isFinite(f)) {
             if (f < fRange.minVal || f > fRange.maxVal) return false;
-          } else {
-            // ASSUMPTION: keep non-numeric F rows (so you don't lose all rows)
-            // If you'd rather exclude blanks, change this to `return false;`
-            return true;
           }
         }
 
         return true;
       });
 
-      // Sort newest date first
-      filtered.sort((a, b) => {
+      filtered.sort((a,b) => {
         const da = parseDateLoose(a[COLS.A_DATE]);
         const db = parseDateLoose(b[COLS.A_DATE]);
         if (!da && !db) return 0;
@@ -755,6 +683,11 @@
       selectedTracks.clear();
       selectedGrades.clear();
 
+      // Reset touched flags so page shows ALL rows again
+      eTouched = false;
+      fTouched = false;
+
+      // Repopulate inputs with min/max, but they won't filter until edited
       if (eMinDefault !== null && eMaxDefault !== null) {
         eMinEl.value = eMinDefault.toFixed(2);
         eMaxEl.value = eMaxDefault.toFixed(2);
@@ -776,13 +709,9 @@
       updateMultiSelectLabel(trackValues, selectedTracks, trackBtnLabel, "All tracks");
       updateMultiSelectLabel(gradeValues, selectedGrades, gradeBtnLabel, "All grades");
 
-      page = 1;
       applyFiltersAndRender(true);
     }
 
-    // =========================
-    // Load + init
-    // =========================
     async function init() {
       try {
         setStatus("Loading table…");
@@ -801,6 +730,7 @@
         const dmm = computeDateMinMax();
         dateMin = dmm.min;
         dateMax = dmm.max;
+        if (dateMin && dateMax) dateHintEl.textContent = `Data range: ${toISODate(dateMin)} → ${toISODate(dateMax)}`;
 
         const em = computeMinMaxNumeric(COLS.E_MODEL_PCT);
         eMinDefault = em.min;
@@ -810,7 +740,10 @@
         fMinDefault = fm.min;
         fMaxDefault = fm.max;
 
-        // Populate range inputs (only if we found numeric values)
+        // Populate inputs but DO NOT enable filtering until user edits
+        eTouched = false;
+        fTouched = false;
+
         if (eMinDefault !== null && eMaxDefault !== null) {
           eMinEl.value = eMinDefault.toFixed(2);
           eMaxEl.value = eMaxDefault.toFixed(2);
@@ -823,27 +756,28 @@
           fMinEl.value = fMinDefault.toFixed(2);
           fMaxEl.value = fMaxDefault.toFixed(2);
         } else {
-          // If F couldn't be parsed, don't force 0.00 → 0.00
           fMinEl.value = "";
           fMaxEl.value = "";
         }
 
-        if (dateMin && dateMax) {
-          dateHintEl.textContent = `Data range: ${toISODate(dateMin)} → ${toISODate(dateMax)}`;
-        } else {
-          dateHintEl.textContent = "";
-        }
-
         const trackValues = uniqueSortedValues(COLS.B_TRACK);
         const gradeValues = uniqueSortedValues(COLS.C_GRADE);
-
         renderMultiSelect(trackPanel, trackValues, selectedTracks, trackBtnLabel, "All tracks");
         renderMultiSelect(gradePanel, gradeValues, selectedGrades, gradeBtnLabel, "All grades");
 
+        // Show ALL rows by default
         filtered = rows.slice();
+        filtered.sort((a,b) => {
+          const da = parseDateLoose(a[COLS.A_DATE]);
+          const db = parseDateLoose(b[COLS.A_DATE]);
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return db - da;
+        });
 
-        // initial sort + render (and apply default ranges if present)
-        applyFiltersAndRender(true);
+        updateSummary();
+        renderTableBody();
 
         setStatus(`Loaded ${rows.length.toLocaleString()} rows.`);
       } catch (err) {
@@ -852,15 +786,12 @@
       }
     }
 
-    // =========================
     // Events
-    // =========================
     trackBtn.addEventListener("click", () => {
       const isOpen = trackPanel.classList.contains("open");
       setPanelOpen(trackPanel, trackBtn, !isOpen);
       setPanelOpen(gradePanel, gradeBtn, false);
     });
-
     gradeBtn.addEventListener("click", () => {
       const isOpen = gradePanel.classList.contains("open");
       setPanelOpen(gradePanel, gradeBtn, !isOpen);
@@ -875,20 +806,19 @@
       }
     });
 
-    [dateFromEl, dateToEl].forEach(el => {
-      el.addEventListener("change", () => applyFiltersAndRender(true));
+    [dateFromEl, dateToEl].forEach(el => el.addEventListener("change", () => applyFiltersAndRender(true)));
+
+    // Mark range filters as "touched" only when user edits them
+    [eMinEl, eMaxEl].forEach(el => {
+      el.addEventListener("input", () => { eTouched = true; applyFiltersAndRender(true); });
+      el.addEventListener("change", () => { eTouched = true; applyFiltersAndRender(true); });
+    });
+    [fMinEl, fMaxEl].forEach(el => {
+      el.addEventListener("input", () => { fTouched = true; applyFiltersAndRender(true); });
+      el.addEventListener("change", () => { fTouched = true; applyFiltersAndRender(true); });
     });
 
-    [eMinEl, eMaxEl, fMinEl, fMaxEl].forEach(el => {
-      el.addEventListener("input", () => applyFiltersAndRender(true));
-      el.addEventListener("change", () => applyFiltersAndRender(true));
-    });
-
-    prevBtn.addEventListener("click", () => {
-      page = Math.max(1, page - 1);
-      renderTableBody();
-    });
-
+    prevBtn.addEventListener("click", () => { page = Math.max(1, page - 1); renderTableBody(); });
     nextBtn.addEventListener("click", () => {
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       page = Math.min(totalPages, page + 1);
