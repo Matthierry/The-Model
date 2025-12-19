@@ -8,219 +8,207 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* Page-specific additions that should still match your existing styling */
-    .filters {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 12px;
-      align-items: end;
-      margin: 16px 0 18px;
+    /* Page-specific additions that match your site */
+    .filters{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:12px;
+      align-items:end;
+      margin:16px 0 18px;
     }
-    .field {
-      grid-column: span 12;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.10);
+    .field{
+      grid-column:span 12;
+      background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.08);
       border-radius: 12px;
       padding: 12px;
     }
-    @media (min-width: 900px) {
-      .field.field-date { grid-column: span 5; }
-      .field.field-track { grid-column: span 3; }
-      .field.field-grade { grid-column: span 3; }
-      .field.field-actions { grid-column: span 1; }
-      .field.field-range { grid-column: span 3; }
+    @media (min-width: 900px){
+      .field.field-date{grid-column:span 5;}
+      .field.field-track{grid-column:span 3;}
+      .field.field-grade{grid-column:span 3;}
+      .field.field-actions{grid-column:span 1;}
+      .field.field-range{grid-column:span 3;}
     }
 
-    .label {
-      display: block;
-      font-size: 12px;
-      opacity: 0.85;
-      margin-bottom: 8px;
+    .label{
+      display:block;
+      font-size:12px;
+      opacity:0.85;
+      margin-bottom:8px;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    /* Inputs/buttons: keep compatible with your theme */
+    .input, .btn, .selectbtn{
+      appearance:none;
+      -webkit-appearance:none;
+      background:#fff;
+      color:#111;
+      border:1px solid rgba(0,0,0,0.18);
+      border-radius:10px;
+      padding:10px 12px;
+      font:inherit;
+      line-height:1.2;
+    }
+    .input{min-width:160px;}
+    .input[type="number"]{width:140px;}
+    .input[type="date"]{min-width:170px;}
+
+    .btn, .selectbtn{cursor:pointer; user-select:none; white-space:nowrap;}
+    .btn:hover, .selectbtn:hover{border-color: rgba(0,0,0,0.30);}
+
+    .btn.primaryish{
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,0,0,0.20);
     }
 
-    .input, .btn, .selectbtn {
-      appearance: none;
-      -webkit-appearance: none;
-      background: rgba(0,0,0,0.18);
-      color: inherit;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font: inherit;
-      line-height: 1.2;
-    }
-    .input {
-      min-width: 160px;
-    }
-    .input[type="number"] { width: 140px; }
-    .input[type="date"] { min-width: 170px; }
+    .muted{opacity:0.8; font-size:12px;}
 
-    .btn, .selectbtn {
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
+    /* Multi-select dropdown (FIX #2: white background + readable text) */
+    .select{position:relative; width:100%;}
+    .selectbtn{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      background:#fff;
+      color:#111;
     }
-    .btn:hover, .selectbtn:hover { border-color: rgba(255,255,255,0.22); }
+    .caret{opacity:0.8; font-size:12px;}
 
-    .btn.primaryish {
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,255,255,0.18);
+    .panel{
+      position:absolute;
+      z-index:50;
+      top:calc(100% + 8px);
+      left:0;
+      right:0;
+      background:#fff;
+      color:#111;
+      border:1px solid rgba(0,0,0,0.18);
+      border-radius:12px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.20);
+      padding:10px;
+      max-height:320px;
+      overflow:auto;
+      display:none;
     }
+    .panel.open{display:block;}
 
-    .muted {
-      opacity: 0.8;
-      font-size: 12px;
+    .panel .panel-actions{
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+      position:sticky;
+      top:0;
+      padding-top:2px;
+      background:#fff;
     }
+    .chipbtn{
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.04);
+      cursor:pointer;
+      color:#111;
+    }
+    .chipbtn:hover{border-color: rgba(0,0,0,0.28);}
 
-    /* Multi-select dropdown */
-    .select {
-      position: relative;
-      width: 100%;
+    .opt{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 6px;
+      border-radius:10px;
+      color:#111;
     }
-    .selectbtn {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    .caret {
-      opacity: 0.8;
-      font-size: 12px;
-    }
-    .panel {
-      position: absolute;
-      z-index: 50;
-      top: calc(100% + 8px);
-      left: 0;
-      right: 0;
-      background: rgba(20,20,22,0.98);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-      padding: 10px;
-      max-height: 320px;
-      overflow: auto;
-      display: none;
-    }
-    .panel.open { display: block; }
-    .panel .panel-actions {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      position: sticky;
-      top: 0;
-      padding-top: 2px;
-      background: rgba(20,20,22,0.98);
-    }
-    .chipbtn {
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
-      cursor: pointer;
-    }
-    .chipbtn:hover { border-color: rgba(255,255,255,0.22); }
-
-    .opt {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 6px;
-      border-radius: 10px;
-    }
-    .opt:hover { background: rgba(255,255,255,0.04); }
-    .opt input { transform: translateY(1px); }
+    .opt:hover{background: rgba(0,0,0,0.04);}
+    .opt input{transform: translateY(1px);}
 
     /* Table */
-    .tablewrap {
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 14px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.02);
+    .tablewrap{
+      border:1px solid rgba(0,0,0,0.10);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
     }
-    .table-scroll {
-      overflow: auto;
-      max-height: 70vh;
+    .table-scroll{
+      overflow:auto;
+      max-height:70vh;
+      min-height:260px; /* FIX #1: ensure there's visible body area even when few rows */
     }
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      min-width: 1100px; /* A–M needs room */
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      min-width:1100px; /* A–M needs room */
     }
-    thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: rgba(20,20,22,0.98);
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-      text-align: left;
-      font-size: 12px;
-      letter-spacing: 0.02em;
-      opacity: 0.9;
-      padding: 10px 12px;
-      white-space: nowrap;
+    thead th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#f3f4f6;
+      color:#111;
+      border-bottom:1px solid rgba(0,0,0,0.10);
+      text-align:left;
+      font-size:12px;
+      letter-spacing:0.02em;
+      padding:10px 12px;
+      white-space:nowrap;
     }
-    tbody td {
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      padding: 10px 12px;
-      font-size: 13px;
-      white-space: nowrap;
+    tbody td{
+      border-bottom:1px solid rgba(0,0,0,0.06);
+      padding:10px 12px;
+      font-size:13px;
+      white-space:nowrap;
+      color:#111;
     }
-    tbody tr:hover td { background: rgba(255,255,255,0.03); }
+    tbody tr:hover td{background: rgba(0,0,0,0.03);}
 
-    .table-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      flex-wrap: wrap;
-    }
-
-    .summary {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .pill {
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
-      border-radius: 999px;
-      padding: 8px 10px;
-      font-size: 12px;
-      opacity: 0.92;
+    .table-topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-bottom:1px solid rgba(0,0,0,0.08);
+      flex-wrap:wrap;
     }
 
-    .pager {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
+    .summary{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .pager .btn { padding: 8px 10px; font-size: 12px; }
-    .pager .pageinfo { font-size: 12px; opacity: 0.85; }
+    .pill{
+      border:1px solid rgba(0,0,0,0.12);
+      background: rgba(0,0,0,0.03);
+      border-radius:999px;
+      padding:8px 10px;
+      font-size:12px;
+      color:#111;
+      opacity:0.92;
+    }
 
-    .status {
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.85;
+    .pager{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
     }
-    .error {
-      color: #ffb3b3;
-      opacity: 1;
-    }
+    .pager .btn{padding:8px 10px; font-size:12px;}
+    .pager .pageinfo{font-size:12px; opacity:0.85;}
+
+    .status{margin-top:10px; font-size:12px; opacity:0.85;}
+    .error{color:#b00020; opacity:1;}
   </style>
 </head>
 
@@ -369,7 +357,6 @@
       A_DATE: 0,
       B_TRACK: 1,
       C_GRADE: 2,
-      D: 3,
       E_MODEL_PCT: 4,
       F_MODEL_DIFF: 5,
       M_SUM: 12,
@@ -389,8 +376,10 @@
     // Defaults discovered from data
     let dateMin = null;
     let dateMax = null;
-    let eMinDefault = 0, eMaxDefault = 0;
-    let fMinDefault = 0, fMaxDefault = 0;
+
+    // If we can't compute min/max (no numeric values), these stay null and range filter is disabled
+    let eMinDefault = null, eMaxDefault = null;
+    let fMinDefault = null, fMaxDefault = null;
 
     // =========================
     // DOM
@@ -462,11 +451,10 @@
       const t = Date.parse(v);
       if (Number.isNaN(t)) return null;
       const dt = new Date(t);
-      // normalize to date-only UTC for consistent comparisons
       return new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
     }
 
-    // Robust-ish CSV parser (handles quotes, commas, newlines in quotes)
+    // Robust CSV parser (quotes/commas/newlines)
     function parseCSV(text) {
       const out = [];
       let row = [];
@@ -504,10 +492,8 @@
           }
         }
       }
-      // last cell
       row.push(cur);
       out.push(row);
-      // drop trailing empty row if present
       if (out.length && out[out.length - 1].every(c => String(c).trim() === "")) out.pop();
       return out;
     }
@@ -523,16 +509,19 @@
     function computeMinMaxNumeric(colIdx) {
       let min = Infinity;
       let max = -Infinity;
+      let count = 0;
+
       for (const r of rows) {
         const n = toNumber(r[colIdx]);
         if (Number.isFinite(n)) {
+          count++;
           if (n < min) min = n;
           if (n > max) max = n;
         }
       }
-      if (min === Infinity) min = 0;
-      if (max === -Infinity) max = 0;
-      return { min, max };
+
+      if (count === 0) return { min: null, max: null, count: 0 };
+      return { min, max, count };
     }
 
     function computeDateMinMax() {
@@ -555,6 +544,11 @@
       return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
     }
 
+    function setPanelOpen(panel, btn, open) {
+      panel.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
     function closePanelsIfClickedOutside(e) {
       const t = e.target;
       const trackWrap = document.getElementById("trackSelect");
@@ -563,9 +557,14 @@
       if (!gradeWrap.contains(t)) setPanelOpen(gradePanel, gradeBtn, false);
     }
 
-    function setPanelOpen(panel, btn, open) {
-      panel.classList.toggle("open", open);
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    function updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel) {
+      if (selectedSet.size === 0 || selectedSet.size === values.length) {
+        btnLabelEl.textContent = allLabel;
+      } else if (selectedSet.size === 1) {
+        btnLabelEl.textContent = Array.from(selectedSet)[0];
+      } else {
+        btnLabelEl.textContent = `${selectedSet.size} selected`;
+      }
     }
 
     function renderMultiSelect(panel, values, selectedSet, btnLabelEl, allLabel) {
@@ -581,7 +580,6 @@
       selAll.addEventListener("click", () => {
         selectedSet.clear();
         values.forEach(v => selectedSet.add(v));
-        syncMultiSelectUI(panel, selectedSet);
         updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
         applyFiltersAndRender(true);
       });
@@ -592,7 +590,6 @@
       clear.textContent = "Clear";
       clear.addEventListener("click", () => {
         selectedSet.clear();
-        syncMultiSelectUI(panel, selectedSet);
         updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
         applyFiltersAndRender(true);
       });
@@ -625,25 +622,6 @@
       });
 
       updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
-    }
-
-    function syncMultiSelectUI(panel, selectedSet) {
-      const checkboxes = panel.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(cb => {
-        const label = cb.closest("label");
-        const text = label ? label.textContent.trim() : "";
-        cb.checked = selectedSet.has(text);
-      });
-    }
-
-    function updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel) {
-      if (selectedSet.size === 0 || selectedSet.size === values.length) {
-        btnLabelEl.textContent = allLabel;
-      } else if (selectedSet.size === 1) {
-        btnLabelEl.textContent = Array.from(selectedSet)[0];
-      } else {
-        btnLabelEl.textContent = `${selectedSet.size} selected`;
-      }
     }
 
     function renderTableHeader() {
@@ -681,9 +659,8 @@
     }
 
     function updateSummary() {
-      // Sum of Column M for currently filtered rows + count lines
       let sum = 0;
-      let count = filtered.length;
+      const count = filtered.length;
 
       for (const r of filtered) {
         const n = toNumber(r[COLS.M_SUM]);
@@ -691,8 +668,20 @@
       }
 
       racesPillEl.textContent = `Races: ${count.toLocaleString()}`;
-      // Keep it neat: show 2dp (since your numeric columns are 2dp)
       sumMPillEl.textContent = `Sum (Col M): ${sum.toFixed(2)}`;
+    }
+
+    function getRangeNumbers(minEl, maxEl, minDefault, maxDefault) {
+      // Only apply range filter if BOTH inputs contain numbers.
+      // (This prevents accidental "0.00 → 0.00" filtering everything out.)
+      const minStr = String(minEl.value ?? "").trim();
+      const maxStr = String(maxEl.value ?? "").trim();
+
+      const minVal = minStr === "" ? (minDefault ?? NaN) : Number(minStr);
+      const maxVal = maxStr === "" ? (maxDefault ?? NaN) : Number(maxStr);
+
+      const apply = Number.isFinite(minVal) && Number.isFinite(maxVal);
+      return { apply, minVal, maxVal };
     }
 
     function applyFiltersAndRender(resetToFirstPage = false) {
@@ -701,10 +690,8 @@
       const fromVal = dateFromEl.value ? parseDateLoose(dateFromEl.value) : null;
       const toVal   = dateToEl.value ? parseDateLoose(dateToEl.value) : null;
 
-      const eMin = (eMinEl.value === "" ? eMinDefault : Number(eMinEl.value));
-      const eMax = (eMaxEl.value === "" ? eMaxDefault : Number(eMaxEl.value));
-      const fMin = (fMinEl.value === "" ? fMinDefault : Number(fMinEl.value));
-      const fMax = (fMaxEl.value === "" ? fMaxDefault : Number(fMaxEl.value));
+      const eRange = getRangeNumbers(eMinEl, eMaxEl, eMinDefault, eMaxDefault);
+      const fRange = getRangeNumbers(fMinEl, fMaxEl, fMinDefault, fMaxDefault);
 
       const tracksAll = (selectedTracks.size === 0);
       const gradesAll = (selectedGrades.size === 0);
@@ -721,21 +708,27 @@
         if (!tracksAll && !selectedTracks.has(track)) return false;
         if (!gradesAll && !selectedGrades.has(grade)) return false;
 
-        // E range inclusive
-        const e = toNumber(r[COLS.E_MODEL_PCT]);
-        if (Number.isFinite(e)) {
-          if (e < eMin || e > eMax) return false;
-        } else {
-          // If blank/non-numeric, exclude (safer for range filtering)
-          return false;
+        // E range inclusive (only if range is active)
+        if (eRange.apply) {
+          const e = toNumber(r[COLS.E_MODEL_PCT]);
+          if (Number.isFinite(e)) {
+            if (e < eRange.minVal || e > eRange.maxVal) return false;
+          } else {
+            // exclude if E is non-numeric and user is filtering E
+            return false;
+          }
         }
 
-        // F range inclusive
-        const f = toNumber(r[COLS.F_MODEL_DIFF]);
-        if (Number.isFinite(f)) {
-          if (f < fMin || f > fMax) return false;
-        } else {
-          return false;
+        // F range inclusive (only if range is active)
+        if (fRange.apply) {
+          const f = toNumber(r[COLS.F_MODEL_DIFF]);
+          if (Number.isFinite(f)) {
+            if (f < fRange.minVal || f > fRange.maxVal) return false;
+          } else {
+            // ASSUMPTION: keep non-numeric F rows (so you don't lose all rows)
+            // If you'd rather exclude blanks, change this to `return false;`
+            return true;
+          }
         }
 
         return true;
@@ -745,7 +738,6 @@
       filtered.sort((a, b) => {
         const da = parseDateLoose(a[COLS.A_DATE]);
         const db = parseDateLoose(b[COLS.A_DATE]);
-        // Nulls last
         if (!da && !db) return 0;
         if (!da) return 1;
         if (!db) return -1;
@@ -757,21 +749,28 @@
     }
 
     function resetAll() {
-      // Reset date to full range (all)
       dateFromEl.value = "";
       dateToEl.value = "";
 
-      // Reset multi-select (all)
       selectedTracks.clear();
       selectedGrades.clear();
 
-      // Reset ranges to defaults (auto-discovered)
-      eMinEl.value = eMinDefault.toFixed(2);
-      eMaxEl.value = eMaxDefault.toFixed(2);
-      fMinEl.value = fMinDefault.toFixed(2);
-      fMaxEl.value = fMaxDefault.toFixed(2);
+      if (eMinDefault !== null && eMaxDefault !== null) {
+        eMinEl.value = eMinDefault.toFixed(2);
+        eMaxEl.value = eMaxDefault.toFixed(2);
+      } else {
+        eMinEl.value = "";
+        eMaxEl.value = "";
+      }
 
-      // Refresh labels
+      if (fMinDefault !== null && fMaxDefault !== null) {
+        fMinEl.value = fMinDefault.toFixed(2);
+        fMaxEl.value = fMaxDefault.toFixed(2);
+      } else {
+        fMinEl.value = "";
+        fMaxEl.value = "";
+      }
+
       const trackValues = uniqueSortedValues(COLS.B_TRACK);
       const gradeValues = uniqueSortedValues(COLS.C_GRADE);
       updateMultiSelectLabel(trackValues, selectedTracks, trackBtnLabel, "All tracks");
@@ -794,11 +793,11 @@
         const grid = parseCSV(text);
         if (!grid.length) throw new Error("CSV appears to be empty.");
 
-        // Headers are first row; keep A–M only
         headers = grid[0].slice(0, 13).map(h => String(h || "").trim());
         rows = grid.slice(1).map(r => r.slice(0, 13));
 
-        // Compute defaults
+        renderTableHeader();
+
         const dmm = computeDateMinMax();
         dateMin = dmm.min;
         dateMax = dmm.max;
@@ -811,44 +810,39 @@
         fMinDefault = fm.min;
         fMaxDefault = fm.max;
 
-        // Build header row
-        renderTableHeader();
+        // Populate range inputs (only if we found numeric values)
+        if (eMinDefault !== null && eMaxDefault !== null) {
+          eMinEl.value = eMinDefault.toFixed(2);
+          eMaxEl.value = eMaxDefault.toFixed(2);
+        } else {
+          eMinEl.value = "";
+          eMaxEl.value = "";
+        }
 
-        // Build multi-select options
-        const trackValues = uniqueSortedValues(COLS.B_TRACK);
-        const gradeValues = uniqueSortedValues(COLS.C_GRADE);
+        if (fMinDefault !== null && fMaxDefault !== null) {
+          fMinEl.value = fMinDefault.toFixed(2);
+          fMaxEl.value = fMaxDefault.toFixed(2);
+        } else {
+          // If F couldn't be parsed, don't force 0.00 → 0.00
+          fMinEl.value = "";
+          fMaxEl.value = "";
+        }
 
-        // Default = all, which we represent as empty Set. But UI has "Select all" available.
-        renderMultiSelect(trackPanel, trackValues, selectedTracks, trackBtnLabel, "All tracks");
-        renderMultiSelect(gradePanel, gradeValues, selectedGrades, gradeBtnLabel, "All grades");
-
-        // Set initial numeric fields to defaults (auto-populated)
-        eMinEl.value = eMinDefault.toFixed(2);
-        eMaxEl.value = eMaxDefault.toFixed(2);
-        fMinEl.value = fMinDefault.toFixed(2);
-        fMaxEl.value = fMaxDefault.toFixed(2);
-
-        // Date hint
         if (dateMin && dateMax) {
           dateHintEl.textContent = `Data range: ${toISODate(dateMin)} → ${toISODate(dateMax)}`;
         } else {
           dateHintEl.textContent = "";
         }
 
-        // Initial render
+        const trackValues = uniqueSortedValues(COLS.B_TRACK);
+        const gradeValues = uniqueSortedValues(COLS.C_GRADE);
+
+        renderMultiSelect(trackPanel, trackValues, selectedTracks, trackBtnLabel, "All tracks");
+        renderMultiSelect(gradePanel, gradeValues, selectedGrades, gradeBtnLabel, "All grades");
+
         filtered = rows.slice();
 
-        // Sort newest date first immediately
-        filtered.sort((a, b) => {
-          const da = parseDateLoose(a[COLS.A_DATE]);
-          const db = parseDateLoose(b[COLS.A_DATE]);
-          if (!da && !db) return 0;
-          if (!da) return 1;
-          if (!db) return -1;
-          return db - da;
-        });
-
-        // Apply filters once to compute summary + pagination (will use default ranges)
+        // initial sort + render (and apply default ranges if present)
         applyFiltersAndRender(true);
 
         setStatus(`Loaded ${rows.length.toLocaleString()} rows.`);
@@ -861,17 +855,18 @@
     // =========================
     // Events
     // =========================
-    // Multi-select open/close
     trackBtn.addEventListener("click", () => {
       const isOpen = trackPanel.classList.contains("open");
       setPanelOpen(trackPanel, trackBtn, !isOpen);
       setPanelOpen(gradePanel, gradeBtn, false);
     });
+
     gradeBtn.addEventListener("click", () => {
       const isOpen = gradePanel.classList.contains("open");
       setPanelOpen(gradePanel, gradeBtn, !isOpen);
       setPanelOpen(trackPanel, trackBtn, false);
     });
+
     document.addEventListener("click", closePanelsIfClickedOutside);
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
@@ -880,27 +875,28 @@
       }
     });
 
-    // Filters: apply on change/input
     [dateFromEl, dateToEl].forEach(el => {
       el.addEventListener("change", () => applyFiltersAndRender(true));
     });
+
     [eMinEl, eMaxEl, fMinEl, fMaxEl].forEach(el => {
       el.addEventListener("input", () => applyFiltersAndRender(true));
       el.addEventListener("change", () => applyFiltersAndRender(true));
     });
 
-    // Pagination
-    prevBtn.addEventListener("click", () => { page = Math.max(1, page - 1); renderTableBody(); });
+    prevBtn.addEventListener("click", () => {
+      page = Math.max(1, page - 1);
+      renderTableBody();
+    });
+
     nextBtn.addEventListener("click", () => {
       const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
       page = Math.min(totalPages, page + 1);
       renderTableBody();
     });
 
-    // Reset
     resetBtn.addEventListener("click", resetAll);
 
-    // Kick off
     init();
   </script>
 </body>
