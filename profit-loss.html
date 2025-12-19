@@ -6,7 +6,224 @@
   <title>The Model</title>
   <meta name="description" content="The Model — Statistical sports betting" />
   <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* Page-specific additions that should still match your existing styling */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      align-items: end;
+      margin: 16px 0 18px;
+    }
+    .field {
+      grid-column: span 12;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    @media (min-width: 900px) {
+      .field.field-date { grid-column: span 5; }
+      .field.field-track { grid-column: span 3; }
+      .field.field-grade { grid-column: span 3; }
+      .field.field-actions { grid-column: span 1; }
+      .field.field-range { grid-column: span 3; }
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input, .btn, .selectbtn {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(0,0,0,0.18);
+      color: inherit;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      line-height: 1.2;
+    }
+    .input {
+      min-width: 160px;
+    }
+    .input[type="number"] { width: 140px; }
+    .input[type="date"] { min-width: 170px; }
+
+    .btn, .selectbtn {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .btn:hover, .selectbtn:hover { border-color: rgba(255,255,255,0.22); }
+
+    .btn.primaryish {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .muted {
+      opacity: 0.8;
+      font-size: 12px;
+    }
+
+    /* Multi-select dropdown */
+    .select {
+      position: relative;
+      width: 100%;
+    }
+    .selectbtn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .caret {
+      opacity: 0.8;
+      font-size: 12px;
+    }
+    .panel {
+      position: absolute;
+      z-index: 50;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: rgba(20,20,22,0.98);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      padding: 10px;
+      max-height: 320px;
+      overflow: auto;
+      display: none;
+    }
+    .panel.open { display: block; }
+    .panel .panel-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      position: sticky;
+      top: 0;
+      padding-top: 2px;
+      background: rgba(20,20,22,0.98);
+    }
+    .chipbtn {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+    .chipbtn:hover { border-color: rgba(255,255,255,0.22); }
+
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 6px;
+      border-radius: 10px;
+    }
+    .opt:hover { background: rgba(255,255,255,0.04); }
+    .opt input { transform: translateY(1px); }
+
+    /* Table */
+    .tablewrap {
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.02);
+    }
+    .table-scroll {
+      overflow: auto;
+      max-height: 70vh;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 1100px; /* A–M needs room */
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(20,20,22,0.98);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      opacity: 0.9;
+      padding: 10px 12px;
+      white-space: nowrap;
+    }
+    tbody td {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 12px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    tbody tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .table-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-wrap: wrap;
+    }
+
+    .summary {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pill {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      opacity: 0.92;
+    }
+
+    .pager {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pager .btn { padding: 8px 10px; font-size: 12px; }
+    .pager .pageinfo { font-size: 12px; opacity: 0.85; }
+
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .error {
+      color: #ffb3b3;
+      opacity: 1;
+    }
+  </style>
 </head>
+
 <body>
   <header>
     <div class="container">
@@ -32,13 +249,98 @@
   <main class="surface">
     <div class="container">
       <section class="section">
-        <h2 style="margin-top:0;">Coming soon</h2>
-        <p>This page is being built. For now, join the Telegram group for daily picks.</p>
-        <div class="callout">
-          <a class="cta primary" href="https://t.co/md5sOV9Pa1" target="_blank" rel="noopener noreferrer">
-            Join The Model Telegram Group
-          </a>
+        <h2 style="margin-top:0;">Selections</h2>
+        <p class="muted">Filter by Date, Track, Grade, Model % and Model Difference. Sorted newest first.</p>
+
+        <!-- Filters -->
+        <div class="filters" aria-label="Filters">
+          <!-- Date range -->
+          <div class="field field-date">
+            <span class="label">Date (From / To)</span>
+            <div class="row">
+              <input id="dateFrom" class="input" type="date" aria-label="Date from" />
+              <input id="dateTo" class="input" type="date" aria-label="Date to" />
+              <span class="muted" id="dateHint"></span>
+            </div>
+          </div>
+
+          <!-- Track multi-select -->
+          <div class="field field-track">
+            <span class="label">Track (multi-select)</span>
+            <div class="select" id="trackSelect">
+              <button type="button" class="selectbtn" aria-haspopup="listbox" aria-expanded="false" id="trackBtn">
+                <span id="trackBtnLabel">All tracks</span>
+                <span class="caret">▾</span>
+              </button>
+              <div class="panel" role="listbox" aria-multiselectable="true" id="trackPanel"></div>
+            </div>
+          </div>
+
+          <!-- Grade multi-select -->
+          <div class="field field-grade">
+            <span class="label">Grade (multi-select)</span>
+            <div class="select" id="gradeSelect">
+              <button type="button" class="selectbtn" aria-haspopup="listbox" aria-expanded="false" id="gradeBtn">
+                <span id="gradeBtnLabel">All grades</span>
+                <span class="caret">▾</span>
+              </button>
+              <div class="panel" role="listbox" aria-multiselectable="true" id="gradePanel"></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="field field-actions">
+            <span class="label">Actions</span>
+            <div class="row">
+              <button type="button" class="btn primaryish" id="resetBtn">Reset</button>
+            </div>
+          </div>
+
+          <!-- Model % range -->
+          <div class="field field-range">
+            <span class="label">Model Percentage (E) min / max</span>
+            <div class="row">
+              <input id="eMin" class="input" type="number" step="0.01" aria-label="Model Percentage min" />
+              <input id="eMax" class="input" type="number" step="0.01" aria-label="Model Percentage max" />
+            </div>
+          </div>
+
+          <!-- Model Difference range -->
+          <div class="field field-range">
+            <span class="label">Model Difference (F) min / max</span>
+            <div class="row">
+              <input id="fMin" class="input" type="number" step="0.01" aria-label="Model Difference min" />
+              <input id="fMax" class="input" type="number" step="0.01" aria-label="Model Difference max" />
+            </div>
+          </div>
         </div>
+
+        <!-- Table -->
+        <div class="tablewrap" aria-label="Selections table">
+          <div class="table-topbar">
+            <div class="summary">
+              <span class="pill" id="racesPill">Races: —</span>
+              <span class="pill" id="sumMPill">Sum (Col M): —</span>
+            </div>
+
+            <div class="pager" aria-label="Pagination">
+              <button type="button" class="btn" id="prevBtn">Prev</button>
+              <span class="pageinfo" id="pageInfo">Page — of —</span>
+              <button type="button" class="btn" id="nextBtn">Next</button>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr id="theadRow"></tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="status" id="status"></div>
       </section>
     </div>
   </main>
@@ -54,6 +356,552 @@
     </div>
     <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
   </footer>
+
+  <script>
+    // =========================
+    // Config
+    // =========================
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSEHhRjNWX2Eo5dN4euW74cv5WZE8Et-4dfgr2uzScW61xwZmlRntOOfO757QMkSzefUUII4SGtJZZT/pub?gid=643345181&single=true&output=csv";
+    const PAGE_SIZE = 200;
+
+    // Columns A–M => indices 0..12
+    const COLS = {
+      A_DATE: 0,
+      B_TRACK: 1,
+      C_GRADE: 2,
+      D: 3,
+      E_MODEL_PCT: 4,
+      F_MODEL_DIFF: 5,
+      M_SUM: 12,
+    };
+
+    // =========================
+    // State
+    // =========================
+    let headers = [];
+    let rows = [];          // full dataset (A–M only)
+    let filtered = [];      // after applying filters
+    let page = 1;
+
+    const selectedTracks = new Set();
+    const selectedGrades = new Set();
+
+    // Defaults discovered from data
+    let dateMin = null;
+    let dateMax = null;
+    let eMinDefault = 0, eMaxDefault = 0;
+    let fMinDefault = 0, fMaxDefault = 0;
+
+    // =========================
+    // DOM
+    // =========================
+    const statusEl = document.getElementById("status");
+
+    const dateFromEl = document.getElementById("dateFrom");
+    const dateToEl   = document.getElementById("dateTo");
+    const dateHintEl = document.getElementById("dateHint");
+
+    const eMinEl = document.getElementById("eMin");
+    const eMaxEl = document.getElementById("eMax");
+    const fMinEl = document.getElementById("fMin");
+    const fMaxEl = document.getElementById("fMax");
+
+    const theadRowEl = document.getElementById("theadRow");
+    const tbodyEl = document.getElementById("tbody");
+
+    const racesPillEl = document.getElementById("racesPill");
+    const sumMPillEl = document.getElementById("sumMPill");
+
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const pageInfoEl = document.getElementById("pageInfo");
+
+    const resetBtn = document.getElementById("resetBtn");
+
+    // Multi-select DOM
+    const trackBtn = document.getElementById("trackBtn");
+    const trackBtnLabel = document.getElementById("trackBtnLabel");
+    const trackPanel = document.getElementById("trackPanel");
+
+    const gradeBtn = document.getElementById("gradeBtn");
+    const gradeBtnLabel = document.getElementById("gradeBtnLabel");
+    const gradePanel = document.getElementById("gradePanel");
+
+    // =========================
+    // Helpers
+    // =========================
+    function setStatus(msg, isError = false) {
+      statusEl.textContent = msg || "";
+      statusEl.classList.toggle("error", !!isError);
+    }
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
+    function toISODate(d) {
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+
+    // Date parsing:
+    // - ISO: 2025-12-19
+    // - UK: 19/12/2025
+    // - Fallback: Date.parse
+    function parseDateLoose(s) {
+      if (!s) return null;
+      const v = String(s).trim();
+      const iso = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) {
+        const y = +iso[1], m = +iso[2], d = +iso[3];
+        const dt = new Date(Date.UTC(y, m - 1, d));
+        return isNaN(dt) ? null : dt;
+      }
+      const uk = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      if (uk) {
+        const d = +uk[1], m = +uk[2], y = +uk[3];
+        const dt = new Date(Date.UTC(y, m - 1, d));
+        return isNaN(dt) ? null : dt;
+      }
+      const t = Date.parse(v);
+      if (Number.isNaN(t)) return null;
+      const dt = new Date(t);
+      // normalize to date-only UTC for consistent comparisons
+      return new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+    }
+
+    // Robust-ish CSV parser (handles quotes, commas, newlines in quotes)
+    function parseCSV(text) {
+      const out = [];
+      let row = [];
+      let cur = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (ch === '"' && next === '"') {
+            cur += '"';
+            i++;
+          } else if (ch === '"') {
+            inQuotes = false;
+          } else {
+            cur += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === ",") {
+            row.push(cur);
+            cur = "";
+          } else if (ch === "\n") {
+            row.push(cur);
+            out.push(row);
+            row = [];
+            cur = "";
+          } else if (ch === "\r") {
+            // ignore
+          } else {
+            cur += ch;
+          }
+        }
+      }
+      // last cell
+      row.push(cur);
+      out.push(row);
+      // drop trailing empty row if present
+      if (out.length && out[out.length - 1].every(c => String(c).trim() === "")) out.pop();
+      return out;
+    }
+
+    function toNumber(s) {
+      if (s === null || s === undefined) return NaN;
+      const v = String(s).trim();
+      if (v === "") return NaN;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function computeMinMaxNumeric(colIdx) {
+      let min = Infinity;
+      let max = -Infinity;
+      for (const r of rows) {
+        const n = toNumber(r[colIdx]);
+        if (Number.isFinite(n)) {
+          if (n < min) min = n;
+          if (n > max) max = n;
+        }
+      }
+      if (min === Infinity) min = 0;
+      if (max === -Infinity) max = 0;
+      return { min, max };
+    }
+
+    function computeDateMinMax() {
+      let min = null, max = null;
+      for (const r of rows) {
+        const dt = parseDateLoose(r[COLS.A_DATE]);
+        if (!dt) continue;
+        if (!min || dt < min) min = dt;
+        if (!max || dt > max) max = dt;
+      }
+      return { min, max };
+    }
+
+    function uniqueSortedValues(colIdx) {
+      const set = new Set();
+      for (const r of rows) {
+        const v = String(r[colIdx] ?? "").trim();
+        if (v) set.add(v);
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+    }
+
+    function closePanelsIfClickedOutside(e) {
+      const t = e.target;
+      const trackWrap = document.getElementById("trackSelect");
+      const gradeWrap = document.getElementById("gradeSelect");
+      if (!trackWrap.contains(t)) setPanelOpen(trackPanel, trackBtn, false);
+      if (!gradeWrap.contains(t)) setPanelOpen(gradePanel, gradeBtn, false);
+    }
+
+    function setPanelOpen(panel, btn, open) {
+      panel.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    function renderMultiSelect(panel, values, selectedSet, btnLabelEl, allLabel) {
+      panel.innerHTML = "";
+
+      const actions = document.createElement("div");
+      actions.className = "panel-actions";
+
+      const selAll = document.createElement("button");
+      selAll.type = "button";
+      selAll.className = "chipbtn";
+      selAll.textContent = "Select all";
+      selAll.addEventListener("click", () => {
+        selectedSet.clear();
+        values.forEach(v => selectedSet.add(v));
+        syncMultiSelectUI(panel, selectedSet);
+        updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
+        applyFiltersAndRender(true);
+      });
+
+      const clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "chipbtn";
+      clear.textContent = "Clear";
+      clear.addEventListener("click", () => {
+        selectedSet.clear();
+        syncMultiSelectUI(panel, selectedSet);
+        updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
+        applyFiltersAndRender(true);
+      });
+
+      actions.appendChild(selAll);
+      actions.appendChild(clear);
+      panel.appendChild(actions);
+
+      values.forEach(v => {
+        const opt = document.createElement("label");
+        opt.className = "opt";
+        opt.setAttribute("role", "option");
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = selectedSet.has(v);
+        cb.addEventListener("change", () => {
+          if (cb.checked) selectedSet.add(v);
+          else selectedSet.delete(v);
+          updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
+          applyFiltersAndRender(true);
+        });
+
+        const txt = document.createElement("span");
+        txt.textContent = v;
+
+        opt.appendChild(cb);
+        opt.appendChild(txt);
+        panel.appendChild(opt);
+      });
+
+      updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel);
+    }
+
+    function syncMultiSelectUI(panel, selectedSet) {
+      const checkboxes = panel.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        const label = cb.closest("label");
+        const text = label ? label.textContent.trim() : "";
+        cb.checked = selectedSet.has(text);
+      });
+    }
+
+    function updateMultiSelectLabel(values, selectedSet, btnLabelEl, allLabel) {
+      if (selectedSet.size === 0 || selectedSet.size === values.length) {
+        btnLabelEl.textContent = allLabel;
+      } else if (selectedSet.size === 1) {
+        btnLabelEl.textContent = Array.from(selectedSet)[0];
+      } else {
+        btnLabelEl.textContent = `${selectedSet.size} selected`;
+      }
+    }
+
+    function renderTableHeader() {
+      theadRowEl.innerHTML = "";
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.textContent = h;
+        theadRowEl.appendChild(th);
+      });
+    }
+
+    function renderTableBody() {
+      tbodyEl.innerHTML = "";
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      if (page > totalPages) page = totalPages;
+
+      const start = (page - 1) * PAGE_SIZE;
+      const end = Math.min(filtered.length, start + PAGE_SIZE);
+      const pageRows = filtered.slice(start, end);
+
+      for (const r of pageRows) {
+        const tr = document.createElement("tr");
+        for (let i = 0; i < headers.length; i++) {
+          const td = document.createElement("td");
+          td.textContent = r[i] ?? "";
+          tr.appendChild(td);
+        }
+        tbodyEl.appendChild(tr);
+      }
+
+      pageInfoEl.textContent = `Page ${page} of ${totalPages}`;
+      prevBtn.disabled = page <= 1;
+      nextBtn.disabled = page >= totalPages;
+    }
+
+    function updateSummary() {
+      // Sum of Column M for currently filtered rows + count lines
+      let sum = 0;
+      let count = filtered.length;
+
+      for (const r of filtered) {
+        const n = toNumber(r[COLS.M_SUM]);
+        if (Number.isFinite(n)) sum += n;
+      }
+
+      racesPillEl.textContent = `Races: ${count.toLocaleString()}`;
+      // Keep it neat: show 2dp (since your numeric columns are 2dp)
+      sumMPillEl.textContent = `Sum (Col M): ${sum.toFixed(2)}`;
+    }
+
+    function applyFiltersAndRender(resetToFirstPage = false) {
+      if (resetToFirstPage) page = 1;
+
+      const fromVal = dateFromEl.value ? parseDateLoose(dateFromEl.value) : null;
+      const toVal   = dateToEl.value ? parseDateLoose(dateToEl.value) : null;
+
+      const eMin = (eMinEl.value === "" ? eMinDefault : Number(eMinEl.value));
+      const eMax = (eMaxEl.value === "" ? eMaxDefault : Number(eMaxEl.value));
+      const fMin = (fMinEl.value === "" ? fMinDefault : Number(fMinEl.value));
+      const fMax = (fMaxEl.value === "" ? fMaxDefault : Number(fMaxEl.value));
+
+      const tracksAll = (selectedTracks.size === 0);
+      const gradesAll = (selectedGrades.size === 0);
+
+      filtered = rows.filter(r => {
+        // Date filter
+        const dt = parseDateLoose(r[COLS.A_DATE]);
+        if (fromVal && dt && dt < fromVal) return false;
+        if (toVal && dt && dt > toVal) return false;
+
+        // Track / Grade
+        const track = String(r[COLS.B_TRACK] ?? "").trim();
+        const grade = String(r[COLS.C_GRADE] ?? "").trim();
+        if (!tracksAll && !selectedTracks.has(track)) return false;
+        if (!gradesAll && !selectedGrades.has(grade)) return false;
+
+        // E range inclusive
+        const e = toNumber(r[COLS.E_MODEL_PCT]);
+        if (Number.isFinite(e)) {
+          if (e < eMin || e > eMax) return false;
+        } else {
+          // If blank/non-numeric, exclude (safer for range filtering)
+          return false;
+        }
+
+        // F range inclusive
+        const f = toNumber(r[COLS.F_MODEL_DIFF]);
+        if (Number.isFinite(f)) {
+          if (f < fMin || f > fMax) return false;
+        } else {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Sort newest date first
+      filtered.sort((a, b) => {
+        const da = parseDateLoose(a[COLS.A_DATE]);
+        const db = parseDateLoose(b[COLS.A_DATE]);
+        // Nulls last
+        if (!da && !db) return 0;
+        if (!da) return 1;
+        if (!db) return -1;
+        return db - da;
+      });
+
+      updateSummary();
+      renderTableBody();
+    }
+
+    function resetAll() {
+      // Reset date to full range (all)
+      dateFromEl.value = "";
+      dateToEl.value = "";
+
+      // Reset multi-select (all)
+      selectedTracks.clear();
+      selectedGrades.clear();
+
+      // Reset ranges to defaults (auto-discovered)
+      eMinEl.value = eMinDefault.toFixed(2);
+      eMaxEl.value = eMaxDefault.toFixed(2);
+      fMinEl.value = fMinDefault.toFixed(2);
+      fMaxEl.value = fMaxDefault.toFixed(2);
+
+      // Refresh labels
+      const trackValues = uniqueSortedValues(COLS.B_TRACK);
+      const gradeValues = uniqueSortedValues(COLS.C_GRADE);
+      updateMultiSelectLabel(trackValues, selectedTracks, trackBtnLabel, "All tracks");
+      updateMultiSelectLabel(gradeValues, selectedGrades, gradeBtnLabel, "All grades");
+
+      page = 1;
+      applyFiltersAndRender(true);
+    }
+
+    // =========================
+    // Load + init
+    // =========================
+    async function init() {
+      try {
+        setStatus("Loading table…");
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Failed to load CSV (${res.status})`);
+        const text = await res.text();
+
+        const grid = parseCSV(text);
+        if (!grid.length) throw new Error("CSV appears to be empty.");
+
+        // Headers are first row; keep A–M only
+        headers = grid[0].slice(0, 13).map(h => String(h || "").trim());
+        rows = grid.slice(1).map(r => r.slice(0, 13));
+
+        // Compute defaults
+        const dmm = computeDateMinMax();
+        dateMin = dmm.min;
+        dateMax = dmm.max;
+
+        const em = computeMinMaxNumeric(COLS.E_MODEL_PCT);
+        eMinDefault = em.min;
+        eMaxDefault = em.max;
+
+        const fm = computeMinMaxNumeric(COLS.F_MODEL_DIFF);
+        fMinDefault = fm.min;
+        fMaxDefault = fm.max;
+
+        // Build header row
+        renderTableHeader();
+
+        // Build multi-select options
+        const trackValues = uniqueSortedValues(COLS.B_TRACK);
+        const gradeValues = uniqueSortedValues(COLS.C_GRADE);
+
+        // Default = all, which we represent as empty Set. But UI has "Select all" available.
+        renderMultiSelect(trackPanel, trackValues, selectedTracks, trackBtnLabel, "All tracks");
+        renderMultiSelect(gradePanel, gradeValues, selectedGrades, gradeBtnLabel, "All grades");
+
+        // Set initial numeric fields to defaults (auto-populated)
+        eMinEl.value = eMinDefault.toFixed(2);
+        eMaxEl.value = eMaxDefault.toFixed(2);
+        fMinEl.value = fMinDefault.toFixed(2);
+        fMaxEl.value = fMaxDefault.toFixed(2);
+
+        // Date hint
+        if (dateMin && dateMax) {
+          dateHintEl.textContent = `Data range: ${toISODate(dateMin)} → ${toISODate(dateMax)}`;
+        } else {
+          dateHintEl.textContent = "";
+        }
+
+        // Initial render
+        filtered = rows.slice();
+
+        // Sort newest date first immediately
+        filtered.sort((a, b) => {
+          const da = parseDateLoose(a[COLS.A_DATE]);
+          const db = parseDateLoose(b[COLS.A_DATE]);
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return db - da;
+        });
+
+        // Apply filters once to compute summary + pagination (will use default ranges)
+        applyFiltersAndRender(true);
+
+        setStatus(`Loaded ${rows.length.toLocaleString()} rows.`);
+      } catch (err) {
+        console.error(err);
+        setStatus(err.message || "Something went wrong loading the table.", true);
+      }
+    }
+
+    // =========================
+    // Events
+    // =========================
+    // Multi-select open/close
+    trackBtn.addEventListener("click", () => {
+      const isOpen = trackPanel.classList.contains("open");
+      setPanelOpen(trackPanel, trackBtn, !isOpen);
+      setPanelOpen(gradePanel, gradeBtn, false);
+    });
+    gradeBtn.addEventListener("click", () => {
+      const isOpen = gradePanel.classList.contains("open");
+      setPanelOpen(gradePanel, gradeBtn, !isOpen);
+      setPanelOpen(trackPanel, trackBtn, false);
+    });
+    document.addEventListener("click", closePanelsIfClickedOutside);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        setPanelOpen(trackPanel, trackBtn, false);
+        setPanelOpen(gradePanel, gradeBtn, false);
+      }
+    });
+
+    // Filters: apply on change/input
+    [dateFromEl, dateToEl].forEach(el => {
+      el.addEventListener("change", () => applyFiltersAndRender(true));
+    });
+    [eMinEl, eMaxEl, fMinEl, fMaxEl].forEach(el => {
+      el.addEventListener("input", () => applyFiltersAndRender(true));
+      el.addEventListener("change", () => applyFiltersAndRender(true));
+    });
+
+    // Pagination
+    prevBtn.addEventListener("click", () => { page = Math.max(1, page - 1); renderTableBody(); });
+    nextBtn.addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+      page = Math.min(totalPages, page + 1);
+      renderTableBody();
+    });
+
+    // Reset
+    resetBtn.addEventListener("click", resetAll);
+
+    // Kick off
+    init();
+  </script>
 </body>
 </html>
-
